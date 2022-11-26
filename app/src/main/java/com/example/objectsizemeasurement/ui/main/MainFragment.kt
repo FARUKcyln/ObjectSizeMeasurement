@@ -3,6 +3,7 @@ package com.example.objectsizemeasurement.ui.main
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
+import android.graphics.Point
 import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
 import android.util.Log
@@ -11,6 +12,8 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.Window
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
@@ -85,7 +88,7 @@ class MainFragment : Fragment() {
 
         val customObjectDetectorOptions = CustomObjectDetectorOptions.Builder(localModel)
             .setDetectorMode(CustomObjectDetectorOptions.STREAM_MODE).enableClassification()
-            .setClassificationConfidenceThreshold(0.5f).setMaxPerObjectLabelCount(3).build()
+            .setClassificationConfidenceThreshold(0.7f).setMaxPerObjectLabelCount(10000).build()
 
         objectDetector = ObjectDetection.getClient(customObjectDetectorOptions)
 
@@ -100,7 +103,11 @@ class MainFragment : Fragment() {
 
         preview.setSurfaceProvider(binding.previewView.surfaceProvider)
 
-        val imageAnalysis = ImageAnalysis.Builder().setTargetResolution(Size(1280, 720))
+        val display = requireActivity().windowManager.defaultDisplay
+        val size = Point()
+        display.getSize(size)
+
+        val imageAnalysis = ImageAnalysis.Builder().setTargetResolution(Size(size.x, size.y))
             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST).build()
 
         imageAnalysis.setAnalyzer(ContextCompat.getMainExecutor(requireContext())) { imageProxy ->
