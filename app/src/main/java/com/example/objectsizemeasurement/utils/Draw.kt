@@ -32,9 +32,9 @@ class Draw(
 
 
         textPaint = Paint()
-        textPaint.color = Color.BLACK
+        textPaint.color = Color.RED
         textPaint.textSize = 50f
-        textPaint.strokeWidth = 10f
+        textPaint.strokeWidth = 50f
         textPaint.style = Paint.Style.FILL
     }
 

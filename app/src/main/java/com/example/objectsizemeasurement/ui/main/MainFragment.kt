@@ -61,13 +61,12 @@ class MainFragment : Fragment() {
     private fun init() {
         viewModel = ViewModelProvider(requireActivity())[MainViewModel::class.java]
 
-        if (allPermissionGranted()) {
-            Toast.makeText(requireContext(), "We have permission", Toast.LENGTH_LONG).show()
-        } else {
+        if (!allPermissionGranted()) {
             ActivityCompat.requestPermissions(
                 requireActivity(), Constants.REQUIRED_PERMISSION, Constants.REQUEST_CODE_PERMISSION
             )
         }
+
 
         if (OpenCVLoader.initDebug()) {
             Log.d("LOADED", "success")
@@ -88,7 +87,7 @@ class MainFragment : Fragment() {
 
         val customObjectDetectorOptions = CustomObjectDetectorOptions.Builder(localModel)
             .setDetectorMode(CustomObjectDetectorOptions.STREAM_MODE).enableClassification()
-            .setClassificationConfidenceThreshold(0.7f).setMaxPerObjectLabelCount(10000).build()
+            .setClassificationConfidenceThreshold(0.7f).setMaxPerObjectLabelCount(10).build()
 
         objectDetector = ObjectDetection.getClient(customObjectDetectorOptions)
 
@@ -124,14 +123,18 @@ class MainFragment : Fragment() {
 
                         if (binding.main.childCount > 1) binding.main.removeViewAt(1)
 
+                        var element: Draw? = null
 
-                        val element = Draw(
-                            requireContext(),
-                            i.boundingBox,
-                            i.labels.firstOrNull()?.text ?: "Undefined"
-                        )
-
-                        binding.main.addView(element)
+                        if (isAdded) {
+                            element = Draw(
+                                requireContext(),
+                                i.boundingBox,
+                                i.labels.firstOrNull()?.text ?: "Undefined"
+                            )
+                        }
+                        if (element != null) {
+                            binding.main.addView(element)
+                        }
                     }
                     imageProxy.close()
                 }.addOnFailureListener { error ->
