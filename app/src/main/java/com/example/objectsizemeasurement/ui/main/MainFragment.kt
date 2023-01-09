@@ -12,9 +12,6 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.Window
-import android.view.WindowManager
-import android.widget.Toast
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
@@ -72,6 +69,14 @@ class MainFragment : Fragment() {
             Log.d("LOADED", "success")
         } else {
             Log.d("LOADED", "error")
+        }
+
+        binding.measureCapture.setOnClickListener {
+            val newFragment = Fragment()
+            requireActivity().supportFragmentManager.beginTransaction()
+                .replace(R.id.container, newFragment, "measurementResultFragment")
+                .addToBackStack(null)
+                .commit()
         }
 
         cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())
