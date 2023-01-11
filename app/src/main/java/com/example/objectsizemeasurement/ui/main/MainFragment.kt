@@ -8,13 +8,8 @@ import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
 import android.util.Log
 import android.util.Size
+import android.view.*
 import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.view.Window
-import android.view.WindowManager
-import android.widget.Toast
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
@@ -39,6 +34,13 @@ class MainFragment : Fragment() {
     private lateinit var binding: FragmentMainBinding
     private lateinit var objectDetector: ObjectDetector
     private lateinit var cameraProviderFuture: ListenableFuture<ProcessCameraProvider>
+    private var givenLengthX: Double = 0.0
+    private var givenLengthY: Double = 0.0
+    private var referenceObjectX: Double = 0.0
+    private var referenceObjectY: Double = 0.0
+    private var isOpened = false
+    private var objectList: MutableList<DetectedObject>? = null
+
 
     companion object {
         fun newInstance() = MainFragment()
@@ -57,8 +59,23 @@ class MainFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         init()
+        observers()
     }
 
+    private fun observers() {
+        viewModel.openObjectSizeDecisionBottomSheetMLD.observe(viewLifecycleOwner) {
+            isOpened = it
+        }
+        viewModel.widthMLD.observe(viewLifecycleOwner) {
+            givenLengthX = it
+        }
+
+        viewModel.heightMLD.observe(viewLifecycleOwner) {
+            givenLengthY = it
+        }
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
     private fun init() {
         viewModel = ViewModelProvider(requireActivity())[MainViewModel::class.java]
 
@@ -68,11 +85,26 @@ class MainFragment : Fragment() {
             )
         }
 
-
         if (OpenCVLoader.initDebug()) {
             Log.d("LOADED", "success")
         } else {
             Log.d("LOADED", "error")
+        }
+
+        requireView().setOnTouchListener { _, motionEvent ->
+            if (!isOpened) {
+                viewModel.openBottomSheet(true)
+                val objectSizeDecisionBottomSheet = ObjectSizeDecisionBottomSheet()
+                objectSizeDecisionBottomSheet.show(
+                    childFragmentManager, ObjectSizeDecisionBottomSheet.TAG
+                )
+            }
+            if (!objectList.isNullOrEmpty()) {
+                referenceObjectX = motionEvent.x.toDouble()
+                referenceObjectY = motionEvent.y.toDouble()
+            }
+
+            return@setOnTouchListener true
         }
 
         cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())
@@ -104,6 +136,7 @@ class MainFragment : Fragment() {
 
         preview.setSurfaceProvider(binding.previewView.surfaceProvider)
 
+
         val display = requireActivity().windowManager.defaultDisplay
         val size = Point()
         display.getSize(size)
@@ -121,7 +154,6 @@ class MainFragment : Fragment() {
 
                 objectDetector.process(processImage).addOnSuccessListener { objects ->
                     if (binding.main.childCount > 1) {
-                        println("S")
                         while (binding.main.childCount > 1) {
                             binding.main.removeViewAt(1)
                         }
@@ -137,13 +169,37 @@ class MainFragment : Fragment() {
                     }
                     objects.sortBy { it.labels.firstOrNull()?.confidence }
                     if (objects.size >= 2) {
+                        objectList = objects
+                        var referenceObject: DetectedObject? = null
+                        for (i in objects) {
+                            if (i.boundingBox.right >= referenceObjectX && i.boundingBox.left <= referenceObjectX
+                                && i.boundingBox.top <= referenceObjectY && i.boundingBox.bottom >= referenceObjectY
+                            ) {
+                                referenceObject = i
+                                break
+                            }
+                        }
                         for (i in objects.subList(0, 2)) {
+                            var currentLengthX = 0.0
+                            var currentLengthY = 0.0
+                            if (referenceObject != null && i != referenceObject) {
+                                currentLengthX =
+                                    (givenLengthX / (referenceObject.boundingBox.right - referenceObject.boundingBox.left)) * (i.boundingBox.right - i.boundingBox.left)
+                                currentLengthY =
+                                    (givenLengthY / (referenceObject.boundingBox.bottom - referenceObject.boundingBox.top)) * (i.boundingBox.bottom - i.boundingBox.top)
+                            } else {
+                                currentLengthX = givenLengthX
+                                currentLengthY = givenLengthY
+                            }
+
                             var element: Draw? = null
 
                             if (isAdded) {
                                 element = Draw(
                                     requireContext(),
                                     i.boundingBox,
+                                    currentLengthX,
+                                    currentLengthY,
                                     i.labels.firstOrNull()?.text ?: "Undefined"
                                 )
                             }
@@ -183,7 +239,6 @@ class MainFragment : Fragment() {
             }
         }
     }
-
 }
 
 object Constants {

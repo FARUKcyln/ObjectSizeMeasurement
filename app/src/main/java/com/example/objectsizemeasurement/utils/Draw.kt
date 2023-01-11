@@ -6,13 +6,13 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Rect
 import android.view.View
-import androidx.core.graphics.component1
-import androidx.core.graphics.component2
-import androidx.core.graphics.component3
-import androidx.core.graphics.component4
 
 class Draw(
-    context: Context?, private val rect: Rect, private val text: String
+    context: Context?,
+    private val rect: Rect,
+    private val sizeX: Double,
+    private val sizeY: Double,
+    private val text: String
 ) : View(context) {
 
     private lateinit var boundaryPaint: Paint
@@ -40,6 +40,11 @@ class Draw(
 
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
+
+        canvas?.drawText(sizeY.toInt().toString(), rect.left.toFloat(), rect.centerY().toFloat(), textPaint)
+
+        canvas?.drawText(sizeX.toInt().toString(), rect.centerX().toFloat(), rect.bottom.toFloat(), textPaint)
+
 
         canvas?.drawText(text, rect.centerX().toFloat(), rect.centerY().toFloat(), textPaint)
         canvas?.drawRect(
