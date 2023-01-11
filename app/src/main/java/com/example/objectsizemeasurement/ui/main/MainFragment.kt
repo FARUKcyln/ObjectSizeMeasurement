@@ -28,6 +28,7 @@ import com.example.objectsizemeasurement.utils.Draw
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.mlkit.common.model.LocalModel
 import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.objects.DetectedObject
 import com.google.mlkit.vision.objects.ObjectDetection
 import com.google.mlkit.vision.objects.ObjectDetector
 import com.google.mlkit.vision.objects.custom.CustomObjectDetectorOptions
@@ -87,7 +88,8 @@ class MainFragment : Fragment() {
 
         val customObjectDetectorOptions = CustomObjectDetectorOptions.Builder(localModel)
             .setDetectorMode(CustomObjectDetectorOptions.STREAM_MODE).enableClassification()
-            .setClassificationConfidenceThreshold(0.7f).setMaxPerObjectLabelCount(10).build()
+            .setClassificationConfidenceThreshold(0.6f).setMaxPerObjectLabelCount(10)
+            .enableMultipleObjects().build()
 
         objectDetector = ObjectDetection.getClient(customObjectDetectorOptions)
 
@@ -118,22 +120,36 @@ class MainFragment : Fragment() {
                 val processImage = InputImage.fromMediaImage(image, rotationDegrees)
 
                 objectDetector.process(processImage).addOnSuccessListener { objects ->
-
-                    for (i in objects) {
-
-                        if (binding.main.childCount > 1) binding.main.removeViewAt(1)
-
-                        var element: Draw? = null
-
-                        if (isAdded) {
-                            element = Draw(
-                                requireContext(),
-                                i.boundingBox,
-                                i.labels.firstOrNull()?.text ?: "Undefined"
-                            )
+                    if (binding.main.childCount > 1) {
+                        println("S")
+                        while (binding.main.childCount > 1) {
+                            binding.main.removeViewAt(1)
                         }
-                        if (element != null) {
-                            binding.main.addView(element)
+                    }
+                    val willRemovedObjects = ArrayList<DetectedObject>()
+                    for (i in objects) {
+                        if (i.labels.firstOrNull()?.text == null) {
+                            willRemovedObjects.add(i)
+                        }
+                    }
+                    for (i in willRemovedObjects) {
+                        objects.remove(i)
+                    }
+                    objects.sortBy { it.labels.firstOrNull()?.confidence }
+                    if (objects.size >= 2) {
+                        for (i in objects.subList(0, 2)) {
+                            var element: Draw? = null
+
+                            if (isAdded) {
+                                element = Draw(
+                                    requireContext(),
+                                    i.boundingBox,
+                                    i.labels.firstOrNull()?.text ?: "Undefined"
+                                )
+                            }
+                            if (element != null) {
+                                binding.main.addView(element)
+                            }
                         }
                     }
                     imageProxy.close()
