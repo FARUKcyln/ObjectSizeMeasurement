@@ -99,7 +99,7 @@ class MainFragment : Fragment() {
                     childFragmentManager, ObjectSizeDecisionBottomSheet.TAG
                 )
             }
-            if (!objectList.isNullOrEmpty()) {
+            if (objectList != null) {
                 referenceObjectX = motionEvent.x.toDouble()
                 referenceObjectY = motionEvent.y.toDouble()
             }
@@ -120,7 +120,7 @@ class MainFragment : Fragment() {
 
         val customObjectDetectorOptions = CustomObjectDetectorOptions.Builder(localModel)
             .setDetectorMode(CustomObjectDetectorOptions.STREAM_MODE).enableClassification()
-            .setClassificationConfidenceThreshold(0.6f).setMaxPerObjectLabelCount(10)
+            .setClassificationConfidenceThreshold(0.5f).setMaxPerObjectLabelCount(10)
             .enableMultipleObjects().build()
 
         objectDetector = ObjectDetection.getClient(customObjectDetectorOptions)

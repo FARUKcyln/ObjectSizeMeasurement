@@ -41,9 +41,19 @@ class Draw(
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
 
-        canvas?.drawText(sizeY.toInt().toString(), rect.left.toFloat(), rect.centerY().toFloat(), textPaint)
+        canvas?.drawText(
+            sizeY.toInt().toString(),
+            (rect.left - 10).toFloat(),
+            rect.centerY().toFloat(),
+            textPaint
+        )
 
-        canvas?.drawText(sizeX.toInt().toString(), rect.centerX().toFloat(), rect.bottom.toFloat(), textPaint)
+        canvas?.drawText(
+            sizeX.toInt().toString(),
+            rect.centerX().toFloat(),
+            (rect.bottom + 10).toFloat(),
+            textPaint
+        )
 
 
         canvas?.drawText(text, rect.centerX().toFloat(), rect.centerY().toFloat(), textPaint)
