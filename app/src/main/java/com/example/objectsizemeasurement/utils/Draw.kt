@@ -1,18 +1,21 @@
 package com.example.objectsizemeasurement.utils
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Rect
 import android.view.View
+import java.text.DecimalFormat
 
 class Draw(
     context: Context?,
     private val rect: Rect,
     private val sizeX: Double,
     private val sizeY: Double,
-    private val text: String
+    private val text: String,
+    private val isReferenceObject: Boolean
 ) : View(context) {
 
     private lateinit var boundaryPaint: Paint
@@ -38,22 +41,11 @@ class Draw(
         textPaint.style = Paint.Style.FILL
     }
 
+    @SuppressLint("DrawAllocation")
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
 
-        canvas?.drawText(
-            sizeY.toInt().toString(),
-            (rect.left - 10).toFloat(),
-            rect.centerY().toFloat(),
-            textPaint
-        )
-
-        canvas?.drawText(
-            sizeX.toInt().toString(),
-            rect.centerX().toFloat(),
-            (rect.bottom + 10).toFloat(),
-            textPaint
-        )
+        val dec = DecimalFormat(".##")
 
 
         canvas?.drawText(text, rect.centerX().toFloat(), rect.centerY().toFloat(), textPaint)
@@ -64,6 +56,29 @@ class Draw(
             rect.bottom.toFloat(),
             boundaryPaint
         )
+
+        if (sizeY > 0 && sizeX > 0) {
+
+            if (isReferenceObject) {
+                canvas?.drawText(
+                    "Reference Object", rect.left.toFloat(), (rect.top - 20).toFloat(), textPaint
+                )
+            }
+
+            canvas?.drawText(
+                dec.format(sizeY).toString() + " cm",
+                (rect.left - 80).toFloat(),
+                rect.centerY().toFloat(),
+                textPaint
+            )
+
+            canvas?.drawText(
+                dec.format(sizeX).toString() + " cm",
+                rect.centerX().toFloat(),
+                (rect.bottom + 50).toFloat(),
+                textPaint
+            )
+        }
 
     }
 }

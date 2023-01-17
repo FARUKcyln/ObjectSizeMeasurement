@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.util.Log
 import android.util.Size
 import android.view.*
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
@@ -58,6 +59,11 @@ class MainFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        Toast.makeText(
+            requireActivity(),
+            "Please select reference object and\n fill the height and width values",
+            Toast.LENGTH_LONG
+        ).show()
         init()
         observers()
     }
@@ -72,6 +78,16 @@ class MainFragment : Fragment() {
 
         viewModel.heightMLD.observe(viewLifecycleOwner) {
             givenLengthY = it
+        }
+
+        viewModel.referenceObjectStatusMLD.observe(viewLifecycleOwner) {
+            if (!it) {
+                Toast.makeText(
+                    requireActivity(),
+                    "Please select reference object and\n fill the height and width values",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
         }
     }
 
@@ -93,6 +109,7 @@ class MainFragment : Fragment() {
 
         requireView().setOnTouchListener { _, motionEvent ->
             if (!isOpened) {
+                viewModel.setReferenceObject(true)
                 viewModel.openBottomSheet(true)
                 val objectSizeDecisionBottomSheet = ObjectSizeDecisionBottomSheet()
                 objectSizeDecisionBottomSheet.show(
@@ -179,14 +196,15 @@ class MainFragment : Fragment() {
                                 break
                             }
                         }
+
                         for (i in objects.subList(0, 2)) {
                             var currentLengthX = 0.0
                             var currentLengthY = 0.0
                             if (referenceObject != null && i != referenceObject) {
                                 currentLengthX =
-                                    (givenLengthX / (referenceObject.boundingBox.right - referenceObject.boundingBox.left)) * (i.boundingBox.right - i.boundingBox.left)
+                                    (givenLengthX / (referenceObject.boundingBox.right - referenceObject.boundingBox.left).toDouble()) * (i.boundingBox.right - i.boundingBox.left).toDouble()
                                 currentLengthY =
-                                    (givenLengthY / (referenceObject.boundingBox.bottom - referenceObject.boundingBox.top)) * (i.boundingBox.bottom - i.boundingBox.top)
+                                    (givenLengthY / (referenceObject.boundingBox.bottom - referenceObject.boundingBox.top).toDouble()) * (i.boundingBox.bottom - i.boundingBox.top).toDouble()
                             } else {
                                 currentLengthX = givenLengthX
                                 currentLengthY = givenLengthY
@@ -200,7 +218,8 @@ class MainFragment : Fragment() {
                                     i.boundingBox,
                                     currentLengthX,
                                     currentLengthY,
-                                    i.labels.firstOrNull()?.text ?: "Undefined"
+                                    i.labels.firstOrNull()?.text ?: "Undefined",
+                                    (i == referenceObject)
                                 )
                             }
                             if (element != null) {

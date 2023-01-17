@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.*
+import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModelProvider
@@ -50,6 +51,7 @@ class ObjectSizeDecisionBottomSheet : DialogFragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+
         viewModel = ViewModelProvider(requireActivity())[MainViewModel::class.java]
 
         binding.close.setOnClickListener {
@@ -62,11 +64,27 @@ class ObjectSizeDecisionBottomSheet : DialogFragment() {
         close()
     }
 
-    private fun close(){
+    private fun close() {
         viewModel.openBottomSheet(false)
-        if (!binding.heightValue.text.isNullOrEmpty() && !binding.widthValue.text.isNullOrEmpty()) {
-            viewModel.updateHeight(binding.heightValue.text.toString().toDouble())
-            viewModel.updateWidth(binding.widthValue.text.toString().toDouble())
+        try {
+
+
+            if (!binding.heightValue.text.isNullOrEmpty() && !binding.widthValue.text.isNullOrEmpty()) {
+                viewModel.updateHeight(binding.heightValue.text.toString().toDouble())
+                viewModel.updateWidth(binding.widthValue.text.toString().toDouble())
+                viewModel.setReferenceObject(true)
+
+            } else {
+                viewModel.updateHeight(0.0)
+                viewModel.updateWidth(0.0)
+                viewModel.setReferenceObject(false)
+            }
+        } catch ( e: Exception){
+            Toast.makeText(
+                requireActivity(),
+                "If the entered height and width values are fractional numbers, the numbers are must be entered using  '.'",
+                Toast.LENGTH_LONG
+            ).show()
         }
         dismiss()
     }

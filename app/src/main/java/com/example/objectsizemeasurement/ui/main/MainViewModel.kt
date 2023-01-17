@@ -7,6 +7,7 @@ class MainViewModel : ViewModel() {
     val openObjectSizeDecisionBottomSheetMLD: MutableLiveData<Boolean> by lazy { MutableLiveData<Boolean>() }
     val widthMLD: MutableLiveData<Double> by lazy { MutableLiveData<Double>() }
     val heightMLD: MutableLiveData<Double> by lazy { MutableLiveData<Double>() }
+    val referenceObjectStatusMLD: MutableLiveData<Boolean> by lazy { MutableLiveData<Boolean>() }
 
     fun openBottomSheet(value: Boolean) {
         openObjectSizeDecisionBottomSheetMLD.value = value
@@ -18,5 +19,9 @@ class MainViewModel : ViewModel() {
 
     fun updateWidth(value: Double){
         widthMLD.value = value
+    }
+
+    fun setReferenceObject(value: Boolean){
+        referenceObjectStatusMLD.value = value
     }
 }
