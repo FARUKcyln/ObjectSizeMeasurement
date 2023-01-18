@@ -61,7 +61,7 @@ class MainFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         Toast.makeText(
             requireActivity(),
-            "Please select reference object and\n fill the height and width values",
+            "Please select reference object",
             Toast.LENGTH_LONG
         ).show()
         init()
@@ -84,7 +84,7 @@ class MainFragment : Fragment() {
             if (!it) {
                 Toast.makeText(
                     requireActivity(),
-                    "Please select reference object and\n fill the height and width values",
+                    "Please select reference object",
                     Toast.LENGTH_SHORT
                 ).show()
             }
@@ -200,14 +200,16 @@ class MainFragment : Fragment() {
                         for (i in objects.subList(0, 2)) {
                             var currentLengthX = 0.0
                             var currentLengthY = 0.0
-                            if (referenceObject != null && i != referenceObject) {
-                                currentLengthX =
-                                    (givenLengthX / (referenceObject.boundingBox.right - referenceObject.boundingBox.left).toDouble()) * (i.boundingBox.right - i.boundingBox.left).toDouble()
-                                currentLengthY =
-                                    (givenLengthY / (referenceObject.boundingBox.bottom - referenceObject.boundingBox.top).toDouble()) * (i.boundingBox.bottom - i.boundingBox.top).toDouble()
-                            } else {
-                                currentLengthX = givenLengthX
-                                currentLengthY = givenLengthY
+                            if (referenceObject != null) {
+                                if (i != referenceObject) {
+                                    currentLengthX =
+                                        (givenLengthX / (referenceObject.boundingBox.right - referenceObject.boundingBox.left).toDouble()) * (i.boundingBox.right - i.boundingBox.left).toDouble()
+                                    currentLengthY =
+                                        (givenLengthY / (referenceObject.boundingBox.bottom - referenceObject.boundingBox.top).toDouble()) * (i.boundingBox.bottom - i.boundingBox.top).toDouble()
+                                } else {
+                                    currentLengthX = givenLengthX
+                                    currentLengthY = givenLengthY
+                                }
                             }
 
                             var element: Draw? = null

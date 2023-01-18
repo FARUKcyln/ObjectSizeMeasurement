@@ -16,6 +16,7 @@ import com.example.objectsizemeasurement.databinding.ObjectSizeDecisionBottomShe
 class ObjectSizeDecisionBottomSheet : DialogFragment() {
     private lateinit var binding: ObjectSizeDecisionBottomSheetBinding
     private lateinit var viewModel: MainViewModel
+    private var isDoneClicked = false
 
     override fun onStart() {
         super.onStart()
@@ -55,21 +56,20 @@ class ObjectSizeDecisionBottomSheet : DialogFragment() {
         viewModel = ViewModelProvider(requireActivity())[MainViewModel::class.java]
 
         binding.close.setOnClickListener {
+            isDoneClicked = true
             close()
         }
 
     }
 
     override fun onDismiss(dialog: DialogInterface) {
-        close()
+       close()
     }
 
     private fun close() {
         viewModel.openBottomSheet(false)
         try {
-
-
-            if (!binding.heightValue.text.isNullOrEmpty() && !binding.widthValue.text.isNullOrEmpty()) {
+            if (!binding.heightValue.text.isNullOrEmpty() && !binding.widthValue.text.isNullOrEmpty() && isDoneClicked) {
                 viewModel.updateHeight(binding.heightValue.text.toString().toDouble())
                 viewModel.updateWidth(binding.widthValue.text.toString().toDouble())
                 viewModel.setReferenceObject(true)
@@ -82,7 +82,7 @@ class ObjectSizeDecisionBottomSheet : DialogFragment() {
         } catch ( e: Exception){
             Toast.makeText(
                 requireActivity(),
-                "If the entered height and width values are fractional numbers, the numbers are must be entered using  '.'",
+                "Fractional numbers are must be entered using  '.'",
                 Toast.LENGTH_LONG
             ).show()
         }
